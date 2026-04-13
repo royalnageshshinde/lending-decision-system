@@ -46,7 +46,7 @@ const LoanForm = () => {
       setError("");
 
       const res = await axios.post(
-        "http://localhost:5000/api/loan/apply",
+  `${import.meta.env.VITE_API_URL}/api/loan/apply`,
         {
           ...form,
           monthlyRevenue: Number(form.monthlyRevenue),
