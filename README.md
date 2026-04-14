@@ -1,115 +1,56 @@
-Lending Decision System for MSMEs
-📌 Project Overview
+# Lending Decision System
 
-This project is a full-stack MSME Lending Decision System built as per the assignment requirements. It allows business owners to submit loan applications and receive an instant lending decision based on rule-based credit heuristics.
+A full-stack **MSME Lending Decision System** built with **React,
+Node.js, Express, and MongoDB Atlas**.
 
-The system evaluates applicant data such as monthly revenue, requested loan amount, tenure, and PAN details to generate:
+## 🚀 Features
 
-Binary decision: Approved / Rejected
-Credit score
-reason codes
-Audit trail logs
+-   Professional MSME loan application UI matching assignment screenshot
+-   PAN validation and input sanitization
+-   Loan eligibility decision engine
+-   Credit score generation
+-   Approval / rejection with reasons
+-   MongoDB Atlas storage
+-   Audit trail endpoint
+-   Rate limiting for API protection
+-   Render backend + Netlify frontend deployment ready
 
-🛠️ Tech Stack
-1)Frontend
-  React (Vite)
-  Tailwind CSS
-  Axios
-  React Toastify
-2)Backend
-  Node.js
-  Express.js
-  MongoDB Atlas
-  Mongoose
-  Express Rate Limit
-3)Deployment
-  Frontend: Render Static Site
-  Backend: Render Web Service
+## 🛠️ Tech Stack
 
-✨ Features Implemented
-   MSME loan application form
-   PAN validation (ABCDE1234F)
-   Credit decision engine
-   Risk reason generation
-   Credit score generation
-   MongoDB persistence
-   Audit trail API
-   Input validation
-   Rate limiting
-   Responsive premium UI
-   Live deployment
+-   Frontend: React + Vite + Tailwind CSS + Axios
+-   Backend: Node.js + Express
+-   Database: MongoDB Atlas + Mongoose
+-   Deployment: Netlify (frontend), Render (backend)
 
-🧠 Decision Logic
+## 📂 Project Structure
 
-The decision engine uses deterministic rules:
+-   `frontend/` → React UI
+-   `backend/` → Express API
+-   `models/` → Loan schema
+-   `controllers/` → Business logic
+-   `utils/` → Decision engine
+-   `routes/` → API routes
 
-1) Revenue to EMI Ratio
-EMI = loanAmount / tenure
-If revenue / EMI < 2
-➜ LOW_REVENUE
-2) Loan to Revenue Ratio
-If loanAmount / monthlyRevenue > 5
-➜ HIGH_LOAN_RATIO
-3) Tenure Risk
-If tenure < 6 OR tenure > 60
-➜ RISKY_TENURE
-4) Fraud / Data Inconsistency
-If loanAmount > monthlyRevenue × 20
-➜ DATA_INCONSISTENCY
-Final Decision
-No reason codes → Approved
-One or more reasons → Rejected
+## ⚙️ API Endpoints
 
-📡 API Documentation
-Apply Loan
-POST /api/loan/apply
+-   `POST /api/loan/apply`
+-   `GET /api/loan/audit`
 
-1)Request Body
-{
-  "ownerName": "Nagesh Shinde",
-  "pan": "ABCDE1234F",
-  "businessType": "Retail",
-  "monthlyRevenue": 100000,
-  "loanAmount": 200000,
-  "tenure": 12,
-  "purpose": "Inventory"
-}
-2)Response
-{
-  "success": true,
-  "message": "Loan processed successfully",
-  "data": {
-    "decision": "Approved",
-    "creditScore": 750,
-    "reasons": []
-  }
-}
+## 🧠 Decision Logic
 
-Audit Trail
-GET /api/loan/audit
-Returns all submitted loan applications.
+The system evaluates: - Revenue to EMI ratio - Loan to revenue ratio -
+Risky tenure - Data inconsistency checks
 
-⚙️ Local Setup
-1) Clone
-    git clone https://github.com/royalnageshshinde/lending-decision-system.git
-    cd lending-decision-system
-2) Backend
-    cd backend
-    npm install
-    npm run dev
-3) Frontend
-    cd frontend
-    npm install
-    npm run dev
+## 🌐 Live Links
 
-🔐 Environment Variables
-   Backend .env
-    MONGO_URI=your_mongodb_atlas_connection_string
-    PORT=5000
-   Frontend env (deployment)
-    VITE_API_URL=https://lending-decision-system-xosz.onrender.com
+-   Frontend: Netlify deployed link: https://lending-decision-system-4.netlify.app/
+-   Backend: Render deployed link: https://lending-decision-system-4-lwpl.onrender.com
+-   Database: MongoDB Atlas
 
-🌐 Live Deployment
-Backend: https://lending-decision-system-xosz.onrender.com
-Frontend: Add your Render static site URL here
-GitHub: https://github.com/royalnageshshinde/lending-decision-system
+## 👨‍💻 Improvements Done
+
+-   Optimized MongoDB schema with indexing
+-   Improved UI to exact screenshot layout
+-   Fixed `.env` and local run issues
+-   Reduced timeout problems by simplifying local-first flow
+-   Added health route and validation
