@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import DecisionResult from "./DecisionResult";
 import { toast } from "react-toastify";
 
 const LoanForm = () => {
+  // Render backend warm-up ping
+  useEffect(() => {
+    fetch(import.meta.env.VITE_API_URL).catch(() => {});
+  }, []);
+
   const [form, setForm] = useState({
     ownerName: "",
     pan: "",
@@ -46,12 +51,15 @@ const LoanForm = () => {
       setError("");
 
       const res = await axios.post(
-  `${import.meta.env.VITE_API_URL}/api/loan/apply`,
+        `${import.meta.env.VITE_API_URL}/api/loan/apply`,
         {
           ...form,
           monthlyRevenue: Number(form.monthlyRevenue),
           loanAmount: Number(form.loanAmount),
           tenure: Number(form.tenure),
+        },
+        {
+          timeout: 90000,
         }
       );
 
@@ -59,7 +67,9 @@ const LoanForm = () => {
       toast.success("Loan decision generated successfully!");
     } catch (err) {
       const message =
-        err.response?.data?.message || "Something went wrong";
+        err.response?.data?.message ||
+        err.message ||
+        "Something went wrong";
 
       setError(message);
       toast.error(message);
@@ -232,7 +242,9 @@ const LoanForm = () => {
               type="submit"
               disabled={loading}
             >
-              {loading ? "Processing..." : "Submit Application"}
+              {loading
+                ? "Processing... Backend waking up (30-60 sec first time)"
+                : "Submit Application"}
             </button>
           </form>
 
