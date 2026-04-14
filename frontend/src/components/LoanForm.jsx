@@ -41,7 +41,7 @@ const LoanForm = () => {
     return axios.post(
       `${import.meta.env.VITE_API_URL}/api/loan/apply`,
       payload,
-      { timeout: 30000 }
+      { timeout: 45000 }
     );
   };
 
@@ -75,7 +75,7 @@ const LoanForm = () => {
         console.log("First attempt timed out, retrying...");
 
         // ✅ wait for backend wake-up
-        await new Promise((resolve) => setTimeout(resolve, 8000));
+        await new Promise((resolve) => setTimeout(resolve, 15000));
 
         // ✅ second attempt
         res = await submitLoanRequest(payload);
