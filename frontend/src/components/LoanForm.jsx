@@ -4,7 +4,7 @@ import DecisionResult from "./DecisionResult";
 import { toast } from "react-toastify";
 
 const LoanForm = () => {
-  // ✅ Lightweight Render warm-up
+  // ✅ Lightweight backend wake-up
   useEffect(() => {
     fetch(import.meta.env.VITE_API_URL).catch(() => {});
   }, []);
@@ -37,6 +37,14 @@ const LoanForm = () => {
     }));
   };
 
+  const submitLoanRequest = async (payload) => {
+    return axios.post(
+      `${import.meta.env.VITE_API_URL}/api/loan/apply`,
+      payload,
+      { timeout: 30000 }
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -46,31 +54,39 @@ const LoanForm = () => {
       return;
     }
 
+    const payload = {
+      ...form,
+      monthlyRevenue: Number(form.monthlyRevenue),
+      loanAmount: Number(form.loanAmount),
+      tenure: Number(form.tenure),
+    };
+
     try {
       setLoading(true);
       setError("");
       setResult(null);
 
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/loan/apply`,
-        {
-          ...form,
-          monthlyRevenue: Number(form.monthlyRevenue),
-          loanAmount: Number(form.loanAmount),
-          tenure: Number(form.tenure),
-        },
-        {
-          timeout: 30000,
-        }
-      );
+      let res;
+
+      try {
+        // ✅ first attempt
+        res = await submitLoanRequest(payload);
+      } catch (firstError) {
+        console.log("First attempt timed out, retrying...");
+
+        // ✅ wait for backend wake-up
+        await new Promise((resolve) => setTimeout(resolve, 8000));
+
+        // ✅ second attempt
+        res = await submitLoanRequest(payload);
+      }
 
       setResult(res.data.data || res.data);
       toast.success("Loan decision generated successfully!");
     } catch (err) {
       const message =
         err.response?.data?.message ||
-        err.message ||
-        "Something went wrong";
+        "Server is waking up. Please try again in a few seconds.";
 
       setError(message);
       toast.error(message);
@@ -82,7 +98,7 @@ const LoanForm = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-5xl mx-auto">
-        {/* Top Header */}
+        {/* Header */}
         <div className="text-center mb-10">
           <div className="w-20 h-20 mx-auto rounded-full bg-blue-600 flex items-center justify-center text-white text-4xl mb-4">
             🏢
@@ -218,9 +234,6 @@ const LoanForm = () => {
                   onChange={handleChange}
                   required
                 />
-                <p className="text-sm text-slate-500 mt-2">
-                  Between 1 and 120 months
-                </p>
               </div>
             </div>
 
@@ -243,7 +256,9 @@ const LoanForm = () => {
               type="submit"
               disabled={loading}
             >
-              {loading ? "Processing..." : "Submit Application"}
+              {loading
+                ? "Processing... waking server if needed"
+                : "Submit Application"}
             </button>
           </form>
 
