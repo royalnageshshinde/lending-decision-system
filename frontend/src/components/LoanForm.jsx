@@ -6,8 +6,17 @@ import { toast } from "react-toastify";
 const LoanForm = () => {
   // Render backend warm-up ping
   useEffect(() => {
-    fetch(import.meta.env.VITE_API_URL).catch(() => {});
-  }, []);
+  const warmUp = async () => {
+    try {
+      await fetch(import.meta.env.VITE_API_URL);
+      await fetch(`${import.meta.env.VITE_API_URL}/api/loan/audit`);
+    } catch (error) {
+      console.log("Warm-up failed");
+    }
+  };
+
+  warmUp();
+}, []);
 
   const [form, setForm] = useState({
     ownerName: "",
@@ -59,7 +68,7 @@ const LoanForm = () => {
           tenure: Number(form.tenure),
         },
         {
-          timeout: 90000,
+          timeout: 180000,
         }
       );
 
