@@ -1,14 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import DecisionResult from "./DecisionResult";
-import { toast } from "react-toastify";
 
 const LoanForm = () => {
-  // ✅ Lightweight backend wake-up
-  useEffect(() => {
-    fetch(import.meta.env.VITE_API_URL).catch(() => {});
-  }, []);
-
   const [form, setForm] = useState({
     ownerName: "",
     pan: "",
@@ -23,11 +17,6 @@ const LoanForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const validatePAN = (pan) => {
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    return panRegex.test(pan);
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -37,59 +26,23 @@ const LoanForm = () => {
     }));
   };
 
-  const submitLoanRequest = async (payload) => {
-    return axios.post(
-      `${import.meta.env.VITE_API_URL}/api/loan/apply`,
-      payload,
-      { timeout: 45000 }
-    );
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validatePAN(form.pan)) {
-      setError("Invalid PAN format. Example: ABCDE1234F");
-      toast.error("Invalid PAN format");
-      return;
-    }
-
-    const payload = {
-      ...form,
-      monthlyRevenue: Number(form.monthlyRevenue),
-      loanAmount: Number(form.loanAmount),
-      tenure: Number(form.tenure),
-    };
 
     try {
       setLoading(true);
       setError("");
-      setResult(null);
 
-      let res;
-
-      try {
-        // ✅ first attempt
-        res = await submitLoanRequest(payload);
-      } catch (firstError) {
-        console.log("First attempt timed out, retrying...");
-
-        // ✅ wait for backend wake-up
-        await new Promise((resolve) => setTimeout(resolve, 15000));
-
-        // ✅ second attempt
-        res = await submitLoanRequest(payload);
-      }
+      const res = await axios.post("http://localhost:5000/api/loan/apply", {
+        ...form,
+        monthlyRevenue: Number(form.monthlyRevenue),
+        loanAmount: Number(form.loanAmount),
+        tenure: Number(form.tenure),
+      });
 
       setResult(res.data.data || res.data);
-      toast.success("Loan decision generated successfully!");
     } catch (err) {
-      const message =
-        err.response?.data?.message ||
-        "Server is waking up. Please try again in a few seconds.";
-
-      setError(message);
-      toast.error(message);
+      setError(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -97,13 +50,13 @@ const LoanForm = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="w-20 h-20 mx-auto rounded-full bg-blue-600 flex items-center justify-center text-white text-4xl mb-4">
+        <div className="text-center mb-12">
+          <div className="w-20 h-20 mx-auto rounded-full bg-blue-600 flex items-center justify-center text-white text-4xl mb-4 shadow-lg">
             🏢
           </div>
-          <h1 className="text-5xl font-bold text-slate-900">
+          <h1 className="text-6xl font-bold text-slate-900">
             MSME Lending Application
           </h1>
           <p className="text-2xl text-slate-600 mt-3">
@@ -112,11 +65,11 @@ const LoanForm = () => {
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
           <h2 className="text-4xl font-bold text-slate-900 mb-2">
             Loan Application Form
           </h2>
-          <p className="text-slate-500 text-xl mb-8">
+          <p className="text-slate-500 text-xl mb-10">
             Fill in the details below to submit your loan application
           </p>
 
@@ -131,7 +84,7 @@ const LoanForm = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="grid md:grid-cols-2 gap-6 mb-10">
               <div>
                 <label className="block font-semibold mb-2">
                   Business Owner Name *
@@ -205,7 +158,7 @@ const LoanForm = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="grid md:grid-cols-2 gap-6 mb-10">
               <div>
                 <label className="block font-semibold mb-2">
                   Requested Loan Amount (₹) *
@@ -234,17 +187,20 @@ const LoanForm = () => {
                   onChange={handleChange}
                   required
                 />
+                <p className="text-sm text-slate-500 mt-2">
+                  Between 1 and 120 months
+                </p>
               </div>
             </div>
 
-            <div className="mb-8">
+            <div className="mb-10">
               <label className="block font-semibold mb-2">
                 Purpose of Loan *
               </label>
               <textarea
                 className="w-full border rounded-xl p-4 text-lg min-h-32"
                 name="purpose"
-                placeholder="Describe how you plan to use this loan"
+                placeholder="Describe how you plan to use this loan (e.g., inventory expansion, equipment purchase, working capital)"
                 value={form.purpose}
                 onChange={handleChange}
                 required
@@ -252,13 +208,11 @@ const LoanForm = () => {
             </div>
 
             <button
-              className="w-full bg-black text-white text-2xl font-semibold py-5 rounded-xl hover:opacity-95 transition"
+              className="w-full bg-black text-white text-3xl font-semibold py-5 rounded-xl hover:opacity-95 transition"
               type="submit"
               disabled={loading}
             >
-              {loading
-                ? "Processing... waking server if needed"
-                : "Submit Application"}
+              {loading ? "Processing..." : "Submit Application"}
             </button>
           </form>
 
