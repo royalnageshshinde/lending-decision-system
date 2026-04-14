@@ -4,19 +4,10 @@ import DecisionResult from "./DecisionResult";
 import { toast } from "react-toastify";
 
 const LoanForm = () => {
-  // Render backend warm-up ping
+  // ✅ Lightweight Render warm-up
   useEffect(() => {
-  const warmUp = async () => {
-    try {
-      await fetch(import.meta.env.VITE_API_URL);
-      await fetch(`${import.meta.env.VITE_API_URL}/api/loan/audit`);
-    } catch (error) {
-      console.log("Warm-up failed");
-    }
-  };
-
-  warmUp();
-}, []);
+    fetch(import.meta.env.VITE_API_URL).catch(() => {});
+  }, []);
 
   const [form, setForm] = useState({
     ownerName: "",
@@ -40,10 +31,10 @@ const LoanForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       [name]: name === "pan" ? value.toUpperCase() : value,
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -58,6 +49,7 @@ const LoanForm = () => {
     try {
       setLoading(true);
       setError("");
+      setResult(null);
 
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/loan/apply`,
@@ -68,7 +60,7 @@ const LoanForm = () => {
           tenure: Number(form.tenure),
         },
         {
-          timeout: 180000,
+          timeout: 30000,
         }
       );
 
@@ -251,9 +243,7 @@ const LoanForm = () => {
               type="submit"
               disabled={loading}
             >
-              {loading
-                ? "Processing... Backend waking up (30-60 sec first time)"
-                : "Submit Application"}
+              {loading ? "Processing..." : "Submit Application"}
             </button>
           </form>
 
